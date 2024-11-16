@@ -1,4 +1,4 @@
-from typing import Iterable, Union, List, Any
+from typing import Iterable, Union, List, Any, Optional
 from itertools import chain
 
 from dlt.common.typing import DictStrAny
@@ -46,3 +46,17 @@ def resolve_paths(paths: TAnyJsonPath, data: DictStrAny) -> List[str]:
     paths = compile_paths(paths)
     p: JSONPath
     return list(chain.from_iterable((str(r.full_path) for r in p.find(data)) for p in paths))
+
+
+def detect_field_name(path: TJsonPath) -> Optional[str]:
+    """Retrieve the column name from a json path which references
+    a single top level column.
+    E.g. the jsonpath `$.foo` or `foo` would return `foo`.
+    The jsonpath `$.foo.items[*]` would return None.
+    """
+    path = compile_path(path)
+    if isinstance(path, JSONPathFields) and len(path.fields) == 1:
+        first_field = path.fields[0]
+        if first_field != "*":
+            return first_field  # type: ignore[no-any-return]
+    return None

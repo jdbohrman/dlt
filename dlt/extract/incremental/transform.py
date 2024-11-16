@@ -6,7 +6,7 @@ from dlt.common.utils import digest128
 from dlt.common.json import json
 from dlt.common.pendulum import pendulum
 from dlt.common.typing import TDataItem, TColumnNames
-from dlt.common.jsonpath import find_values, JSONPathFields, compile_path
+from dlt.common.jsonpath import find_values, JSONPathFields, compile_path, detect_field_name
 from dlt.extract.incremental.exceptions import (
     IncrementalCursorInvalidCoercion,
     IncrementalCursorPathMissing,
@@ -74,12 +74,8 @@ class IncrementalTransform:
         # compile jsonpath
         self._compiled_cursor_path = compile_path(cursor_path)
         # for simple column name we'll fallback to search in dict
-        if (
-            isinstance(self._compiled_cursor_path, JSONPathFields)
-            and len(self._compiled_cursor_path.fields) == 1
-            and self._compiled_cursor_path.fields[0] != "*"
-        ):
-            self.cursor_path = self._compiled_cursor_path.fields[0]
+        if field_name := detect_field_name(self._compiled_cursor_path):
+            self.cursor_path = field_name
             self._compiled_cursor_path = None
 
     def compute_unique_value(

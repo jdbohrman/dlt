@@ -9,7 +9,7 @@ from functools import wraps
 from dlt.common import logger
 from dlt.common.exceptions import MissingDependencyException
 from dlt.common.pendulum import pendulum
-from dlt.common.jsonpath import compile_path
+from dlt.common.jsonpath import compile_path, detect_field_name
 from dlt.common.typing import (
     TDataItem,
     TDataItems,
@@ -269,6 +269,11 @@ class Incremental(ItemTransform[TDataItem], BaseConfiguration, Generic[TCursorVa
     def copy(self) -> "Incremental[TCursorValue]":
         # merge creates a copy
         return self.merge(self)
+
+    def get_cursor_column_name(self) -> Optional[str]:
+        """Return the name of the cursor column if the cursor path resolves to a single column
+        """
+        return detect_field_name(self.cursor_path)
 
     def on_resolved(self) -> None:
         compile_path(self.cursor_path)
