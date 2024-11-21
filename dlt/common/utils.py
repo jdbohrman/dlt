@@ -635,4 +635,3 @@ def make_defunct_class(cls: TObj) -> Type[TObj]:
                 raise RuntimeError("This instance has been dropped and cannot be used anymore.")
 
     return DefunctClass
-
